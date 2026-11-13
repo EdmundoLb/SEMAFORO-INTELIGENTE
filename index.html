@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semáforo Acústico · Centro Cultural Gymmart</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="wrap">
+
+  <!-- ================= HEADER ================= -->
+  <header class="glass">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="5" r="2.6" fill="#ff5c5c"/>
+          <circle cx="12" cy="12" r="2.6" fill="#ffd700"/>
+          <circle cx="12" cy="19" r="2.6" fill="#5cff8a"/>
+        </svg>
+      </div>
+      <div class="brand-title">
+        <div class="eyebrow">Centro Cultural Gymmart </div>
+        <h1>Semáforo Acústico</h1>
+        <p>Monitoreo del ruido en el aula para un entorno más inclusivo</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="shift-toggle glass" style="padding:6px;">
+        <button class="shift-btn active" id="btnManana" data-shift="mañana" aria-pressed="true">☀️ Mañana</button>
+        <button class="shift-btn" id="btnTarde" data-shift="tarde" aria-pressed="false">🌇 Tarde</button>
+      </div>
+      <div class="clock-box glass">
+        <div class="time" id="clockTime">--:--:--</div>
+        <div class="date" id="clockDate">-- de -- de 2026</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN GRID ================= -->
+  <div class="grid">
+
+    <!-- SEMÁFORO -->
+    <div class="glass card span-2 semaphore-card">
+      <h2 style="align-self:flex-start;"><span class="dot"></span> Estado actual del aula</h2>
+      <div class="semaphore-body">
+        <div class="lights-housing">
+          <div class="led red" id="ledRed"></div>
+          <div class="led yellow" id="ledYellow"></div>
+          <div class="led green" id="ledGreen"></div>
+        </div>
+        <div class="db-readout">
+          <div class="db-number" id="dbNumber">0</div>
+          <div class="db-unit">decibelios (dB)</div>
+          <div class="status-pill" id="statusPill" role="status" aria-live="polite">Iniciando…</div>
+        </div>
+      </div>
+      <div class="last-update" id="lastUpdate">Sensor ESP32 · esperando datos…</div>
+    </div>
+
+    <!-- ACTIVIDAD -->
+    <div class="glass card">
+      <h2><span class="dot"></span> Actividad en curso</h2>
+      <div class="activity-list">
+        <button class="activity-btn active" data-activity="grupo" aria-pressed="true">
+          <span><span class="tag">🗣️</span> Trabajo en grupo<span class="desc">Ruido moderado y variable</span></span>
+        </button>
+        <button class="activity-btn" data-activity="exposicion" aria-pressed="false">
+          <span><span class="tag">🎓</span> Exposición magistral<span class="desc">Ambiente silencioso</span></span>
+        </button>
+        <button class="activity-btn" data-activity="recreo" aria-pressed="false">
+          <span><span class="tag">🤸</span> Recreo<span class="desc">Ruido alto esperado</span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- UMBRALES -->
+    <div class="glass card">
+      <h2><span class="dot"></span> Umbrales de referencia</h2>
+      <div class="threshold-row" id="thRowGreen">
+        <div class="threshold-swatch" style="background:var(--green);"></div>
+        <div class="threshold-text"><b>Verde · &lt; 60 dB</b><span>Ambiente adecuado para todos</span></div>
+      </div>
+      <div class="threshold-row" id="thRowYellow">
+        <div class="threshold-swatch" style="background:var(--yellow);"></div>
+        <div class="threshold-text"><b>Amarillo · 60–75 dB</b><span>Precaución, bajar el volumen</span></div>
+      </div>
+      <div class="threshold-row" id="thRowRed">
+        <div class="threshold-swatch" style="background:var(--red);"></div>
+        <div class="threshold-text"><b>Rojo · &gt; 75 dB</b><span>Riesgo de sobrecarga sensorial</span></div>
+      </div>
+      <div class="inclusion-note">
+        <b>Inclusión TEA:</b> por encima del umbral amarillo, algunos estudiantes con hipersensibilidad auditiva pueden experimentar malestar. El semáforo ayuda a autorregular el volumen del aula sin señalar a ningún estudiante en particular.
+      </div>
+    </div>
+
+    <!-- ESTADÍSTICAS DEL DÍA -->
+    <div class="glass card">
+      <h2><span class="dot"></span> Estadísticas del día</h2>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="val" id="statAvg">0</div><div class="lab">Promedio dB</div></div>
+        <div class="stat-box"><div class="val" id="statMax">0</div><div class="lab">Máximo dB</div></div>
+        <div class="stat-box"><div class="val" id="statMin">0</div><div class="lab">Mínimo dB</div></div>
+        <div class="stat-box"><div class="val" id="statReadings">0</div><div class="lab">Lecturas</div></div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Verde</div>
+        <div class="bar-track"><div class="bar-fill" id="barGreen" style="width:0%;background:var(--green);"></div></div>
+        <div class="pct" id="pctGreen">0%</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Amarillo</div>
+        <div class="bar-track"><div class="bar-fill" id="barYellow" style="width:0%;background:var(--yellow);"></div></div>
+        <div class="pct" id="pctYellow">0%</div>
+      </div>
+      <div class="bar-row">
+        <div class="label">Rojo</div>
+        <div class="bar-track"><div class="bar-fill" id="barRed" style="width:0%;background:var(--red);"></div></div>
+        <div class="pct" id="pctRed">0%</div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL EN TIEMPO REAL -->
+    <div class="glass card span-2">
+      <h2><span class="dot"></span> Historial en tiempo real</h2>
+      <div class="chart-wrap">
+        <svg viewBox="0 0 600 190" preserveAspectRatio="none" id="chartSvg">
+          <line id="lineYellow" x1="0" y1="100" x2="600" y2="100" stroke="rgba(255,215,0,0.25)" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+          <line id="lineRed" x1="0" y1="67" x2="600" y2="67" stroke="rgba(255,92,92,0.3)" stroke-width="1" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+          <polygon id="chartArea" points="" fill="url(#gradFill)"/>
+          <polyline id="chartLine" points="" fill="none" stroke="#ffd700" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+          <defs>
+            <linearGradient id="gradFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffd700" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#ffd700" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="chart-legend"><span id="chartOldest">--</span><span>Ahora</span></div>
+    </div>
+
+    <!-- COMPARATIVA POR TURNO -->
+    <div class="glass card">
+      <h2><span class="dot"></span> Comparativa por turno</h2>
+      <div class="compare-row">
+        <div class="compare-item">
+          <div class="top">☀️ Mañana <b id="cmpManana">0 dB</b></div>
+          <div class="bar-track"><div class="bar-fill" id="barManana" style="width:0%;background:linear-gradient(90deg,#ffd700,#fff2a0);"></div></div>
+        </div>
+        <div class="compare-item">
+          <div class="top">🌇 Tarde <b id="cmpTarde">0 dB</b></div>
+          <div class="bar-track"><div class="bar-fill" id="barTarde" style="width:0%;background:linear-gradient(90deg,#0f3460,#4d7ec7);"></div></div>
+        </div>
+      </div>
+      <div class="inclusion-note" style="margin-top:18px;">
+        Los promedios se calculan de forma independiente para cada turno, permitiendo comparar el comportamiento acústico del aula a lo largo del día.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="glass">
+    <div>Proyecto final · Bachillerato Técnico en Informática · Centro Cultural Gymmart · 2026</div>
+    <div class="tech-tags">
+      <span class="tag">ESP32</span>
+      <span class="tag">Sensor de sonido</span>
+      <span class="tag">Firebase Realtime DB</span>
+      <span class="tag">Web · HTML/CSS/JS</span>
+    </div>
+  </footer>
+
+</div>
+
+<!-- SDK compat de Firebase: NECESARIOS para que script.js pueda usar
+     firebase.initializeApp(...) y firebase.database(). No los borres. -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
